@@ -63,9 +63,9 @@ val weather = spark.read
     // гитхабе не жалуются - так что Delta Lake, может быть попробую и вариант со структурированным  потоком, но вообще
     // это все еще медленные большие данные (обновляются раз в день), так что потоки не обязательны.
     .write
-    .partitionBy("STATION","TIMESTAMP")
+    .partitionBy("TIMESTAMP", "STATION")
     .format("delta")
     .mode(Overwrite)
     .save("hdfs://s3.lan:9000/lake/ghcn2/")
 
-z.show(weather)
+//z.show(weather)
