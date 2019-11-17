@@ -32,8 +32,6 @@ val ds1SchemaTyped = new StructType()
     .add("S-FLAG", "byte", true)
     .add("TIME", "string", true)
   
-val core = List("PRCP","TMIN","TMAX")  
-  
 // Биндинг weather сейчас не используется, сделано так потому, что иногда хотелось посмотреть: а что же внутри
 val weather = spark.read
     .format("csv")
@@ -45,9 +43,7 @@ val weather = spark.read
     // persist - место на ноде кончилось раньше чем задача (весь набор данных без фильтра.)
     .load("hdfs://s3.lan:9000/data/ghcn/superghcnd_full_20191102.csv.gz")
     // Это тест - преобразовать потом все на большом кластере
-    .filter($"DATE".substr(0,4) >= "2018")
-    .filter($"Q-FLAG".isNull)
-    .filter($"ELEMENT".isin(core:_*))
+    .filter($"DATE".substr(0,4) >= "2018" && $"Q-FLAG".isNull)
     .withColumn("TIMESTAMP",
         to_timestamp(concat(
             when($"DATE".isNotNull, $"DATE").otherwise(lit("00000000")),
