@@ -52,7 +52,6 @@ val weather = spark.read
     // на уровне схемы но пока так.
     .drop($"DATE")
     .drop($"TIME")
-    // Схема разбиения на разделы должна быть STATION,TIMESTAMP
     .groupBy($"STATION",$"TIMESTAMP").agg(collect_list(map($"ELEMENT",$"DATA")) as "DATA")
     .withColumn("DATA", to_json($"DATA"))
     // Обычно я с опаской отношусь к тому, что мажорную версию меньше единицы - но эти ребята создатели спарка, да и на
