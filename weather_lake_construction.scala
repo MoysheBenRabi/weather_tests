@@ -39,6 +39,11 @@ val weather = spark.read
     .drop($"DATE")
     .drop($"TIME")
     .groupBy($"STATION",$"TIMESTAMP").agg(collect_list(map($"ELEMENT",$"DATA")) as "DATA")
+// Зависит от постановки задачи.
+// Вариант с pivot работает, но мне не нравится. 
+//  .groupBy($"STATION",$"TIMESTAMP").pivot("ELEMENT").agg(
+//        .when(size(collect_list($"DATA")) === 0, null).
+//        .otherwise(collect_list($"DATA")) as "DATA")
     .withColumn("DATA", to_json($"DATA"))
     // Обычно я с опаской отношусь к тому, что мажорную версию меньше единицы - но эти ребята создатели спарка, да и на
     // гитхабе не жалуются - так что Delta Lake, может быть попробую и вариант со структурированным  потоком, но вообще
