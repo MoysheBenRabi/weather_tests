@@ -17,6 +17,8 @@ val ds1SchemaTyped = new StructType()
     .add("Q-FLAG", "byte",true)
     .add("S-FLAG", "byte", true)
     .add("TIME", "string", true)
+
+val joinMap = udf { values: Seq[Map[String, Int]] => values.flatten.toMap }
   
 // Биндинг weather сейчас не используется, сделано так потому, что иногда хотелось посмотреть: а что же внутри
 val weather = spark.read
@@ -38,13 +40,12 @@ val weather = spark.read
     // на уровне схемы но пока так.
     .drop($"DATE")
     .drop($"TIME")
-    .groupBy($"STATION",$"TIMESTAMP").agg(collect_list(map($"ELEMENT",$"DATA")) as "DATA")
+    .groupBy($"STATION",$"TIMESTAMP").agg(joinMap(collect_list(map($"ELEMENT",$"DATA"))) as "DATA")
 // Зависит от постановки задачи.
 // Вариант с pivot работает, но мне не нравится. 
 //  .groupBy($"STATION",$"TIMESTAMP").pivot("ELEMENT").agg(
 //        when(size(collect_list($"DATA")) === 0, null)
 //        .otherwise(collect_list($"DATA")) as "DATA")
-    .withColumn("DATA", to_json($"DATA"))
     // Обычно я с опаской отношусь к тому, что мажорную версию меньше единицы - но эти ребята создатели спарка, да и на
     // гитхабе не жалуются - так что Delta Lake, может быть попробую и вариант со структурированным  потоком, но вообще
     // это все еще медленные большие данные (обновляются раз в день), так что потоки не обязательны.
